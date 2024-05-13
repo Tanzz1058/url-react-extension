@@ -1,23 +1,18 @@
+/*global chrome*/
 import "./App.css";
 import { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
 
 function App() {
   const [url, setUrl] = useState("");
-  const getUrl = async () => {
-    const [tab] = await chrome.tabs.query({
-      queryInfo: { active: true, currentWindow: true },
+  const handleMessage = (message) => {
+    console.log(message);
+    chrome.runtime.sendMessage({ action: "getTabUrl" }, (response) => {
+      console.log(response);
+      const { tabUrl } = response;
+      setUrl(tabUrl);
     });
-    setUrl(tab.url);
   };
-
   useEffect(() => {
-    const handleMessage = (message) => {
-      if (message.action === "sendTabUrl") {
-        setUrl(message.tabUrl);
-      }
-    };
-
     chrome.runtime.onMessage.addListener(handleMessage);
 
     return () => {
